@@ -10,8 +10,8 @@ router.post('/posts/comments', async (req, res) => {
     const passwordRex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/
     const newComment = req.body
     newComment.writeDate = getDate()
-    // console.log('newComment = ', newComment)
 
+    // 댓글을 달고자 하는 게시글이 있는지 확인
     const check = await Posts.findOne({_id: newComment.postId})
     // console.log(check)
     // 만약 댓글을 달고자 한느 게시글이 없으면 아래의 에러를 반환 
@@ -29,6 +29,7 @@ router.post('/posts/comments', async (req, res) => {
       res.status(400).send("비밀번호는 최소 8 자, 최소 하나의 문자 및 하나의 숫자로 입력해주세요")
       return 
     }
+
 
     const reuslt = await Comments.create(newComment)
     // console.log(reuslt)
@@ -92,10 +93,13 @@ router.delete('/posts/comments/:commentId', async (req, res) => {
     const comment = await Comments.findOne({_id: commentId})
     const { password } = req.body
     console.log(commentId, comment);
+    // 입력한 password와 comment의 password를 비교
     if(comment.password === password) {
+      // 맞으면 해당 comment를 삭제한다
       await Comments.deleteOne({_id: commentId})
       res.status(200).send("댓글이 삭제되었습니다.")
     } else {
+      // 틀리면 아래의 에러 메세지를 반환 
       res.status(400).send("비밀번호가 틀립니다.")
     }
 
