@@ -4,23 +4,24 @@ const mongoose = require("mongoose")
 const postsSchema = new mongoose.Schema({
   postTitle: {
     type: String,
-    require: true
+    required: true
   },
   userName: {
     type: String,
-    require: true
+    required: true
   },
   password: {
     type: String,
-    required: [true, 'Password required']
+    required: true,
+    // trim: true
   },
   content: {
     type: String,
-    require: true
+    required: true
   },
   writeDate: {
     type: String,
-    require: true
+    required: true
   }
 
 })
