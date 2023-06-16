@@ -47,7 +47,7 @@ router.get('/posts/:postId/comments', async (req, res) => {
     // 게시글의 id값을 받는다.
     const postId = req.params.postId
     // 게시글의 id값을 가지고 있는 댓글을 모두 가져온다.
-    const comments = await Comments.find({postId : postId})
+    const comments = await Comments.find({postId : postId}, {password:false})
     result = comments.sort((a, b) => {
       return Number(b.writeDate.replace(/\-|:|\s/g, "",)) - Number(a.writeDate.replace(/\-|:|\s/g, ""))
     })
