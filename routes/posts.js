@@ -10,14 +10,12 @@ const getDate = require("../modules/date")
 // 모든 게시물 조회
 router.get('/posts', async (req, res) => {
   try {
+    console.log("?????")
     const allPosts = await Posts.find({}, {"password": false, "content": false})
     if(allPosts.length === 0) res.send("게시물을 달아주세요...")
     const result = allPosts.sort((a, b) => {
       return Number(b.writeDate.replace(/\-|:|\s/g, "",)) - Number(a.writeDate.replace(/\-|:|\s/g, ""))
     })
-
-    console.log(result)
-    console.log('result = ', result[5].writeDate.replace(/\-|:|\s/g, ""))
     res.status(200).json({"allPosts":allPosts})
   } catch (error) {
     res.send(error)
