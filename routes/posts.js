@@ -11,10 +11,16 @@ const getDate = require("../modules/date")
 router.get('/posts', async (req, res) => {
   try {
     const allPosts = await Posts.find({}, {"password": false, "content": false})
-    console.log(allPosts)
+    if(allPosts.length === 0) res.send("게시물을 달아주세요...")
+    const result = allPosts.sort((a, b) => {
+      return Number(b.writeDate.replace(/\-|:|\s/g, "",)) - Number(a.writeDate.replace(/\-|:|\s/g, ""))
+    })
+
+    console.log(result)
+    console.log('result = ', result[5].writeDate.replace(/\-|:|\s/g, ""))
     res.status(200).json({"allPosts":allPosts})
   } catch (error) {
-    res.send("등록된 게시물이 없습니다.")
+    res.send(error)
   }
 })
 
@@ -24,7 +30,7 @@ router.post('/posts', async (req, res) => {
     const passwordRex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/
     const newPost = req.body
     newPost.writeDate = getDate()
-
+    console.log('newPost =', newPost)
     if(passwordRex.test(newPost.password) !== true) {
       res.status(400).send("비밀번호는 최소 8 자, 최소 하나의 문자 및 하나의 숫자로 입력해주세요")
       return 

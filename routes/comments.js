@@ -43,10 +43,16 @@ router.post('/posts/comments', async (req, res) => {
 // 댓글 조회하기 게시글의 id를 parammeter로 받고 해당되는 댓글의 목록을 가져온다.
 router.get('/posts/:postId/comments', async (req, res) => {
   try {
+    console.log('오름차순 = ')
     // 게시글의 id값을 받는다.
     const postId = req.params.postId
     // 게시글의 id값을 가지고 있는 댓글을 모두 가져온다.
     const comments = await Comments.find({postId : postId})
+    result = comments.sort((a, b) => {
+      return Number(b.writeDate.replace(/\-|:|\s/g, "",)) - Number(a.writeDate.replace(/\-|:|\s/g, ""))
+    })
+    console.log('result = ', result)
+
     // 게시글에 댓글이 없으면 아래의 메세지를 출력한다.
     if(comments.length === 0) {
       res.status(401).send(`<h3>댓글을 달아주세요...</h3>`)

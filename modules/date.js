@@ -4,8 +4,10 @@ const getDate = () => {
   const todayYear = date.getFullYear()
   const todayMonth = ('0' + (date.getMonth() + 1)).slice(-2);
   const todayDate = ('0' + date.getDate()).slice(-2);
+  const hours = ('0' + date.getHours()).slice(-2)
+  const minutes = ('0' + date.getMinutes()).slice(-2);
 
-  const todaytString = `${todayYear}-${todayMonth}-${todayDate}`
+  const todaytString = `${todayYear}-${todayMonth}-${todayDate} ${hours}:${minutes}`
   return todaytString;
 }
 getDate()
