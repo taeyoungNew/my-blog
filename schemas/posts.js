@@ -2,25 +2,24 @@
 const mongoose = require("mongoose")
 
 const postsSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Types.ObjectId,
+    required: true
+  },
+  nickname: {
+    type: "String",
+    required: true
+  },
   postTitle: {
-    type: String,
+    type: "String",
     required: true
-  },
-  userName: {
-    type: String,
-    required: true
-  },
-  password: {
-    type: String,
-    required: true,
-    // trim: true
   },
   content: {
-    type: String,
+    type: "String",
     required: true
-  },
+  },  
   writeDate: {
-    type: String,
+    type: "String",
     required: true
   }
 

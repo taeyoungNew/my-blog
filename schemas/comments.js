@@ -6,13 +6,13 @@ const commentsSchema = {
     required: true,
     // unique: true
   },
-  userName: {
-    type: String,
+  userId: {
+    type: String, 
     required: true,
   },
-  password: {
+  nickname: {
     type: String,
-    required: [true, 'Password required'],
+    required: true,
   },
   content: {
     type: String,

@@ -3,36 +3,36 @@ const router = express.Router()
 const Posts = require("../schemas/posts")
 const Comments = require("../schemas/comments")
 const getDate = require("../modules/date")
+const authMiddleware = require("../middleware/auth-middleware")
 
 // 댓글 달기
-router.post('/posts/comments', async (req, res) => {
+router.post('/posts/:postId/comments', authMiddleware, async (req, res) => {
   try {
-    const passwordRex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/
-    const newComment = req.body
-    newComment.writeDate = getDate()
+    // 로그인한 사용자의 ID
+    const user = res.locals.user
+    let { content } = req.body
 
-    // 댓글을 달고자 하는 게시글이 있는지 확인
-    const check = await Posts.findOne({_id: newComment.postId})
-    // console.log(check)
+    const postId = req.params.postId
+    
+    // // 댓글을 달고자 하는 게시글이 있는지 확인
+    const check = await Posts.findOne({_id: postId})
     // 만약 댓글을 달고자 한느 게시글이 없으면 아래의 에러를 반환 
     if(check === null) {
       res.status(400).json({errMsg : "해당 게시글이 없습니다."})
       return
     }
     // 댓글 내용이 비어있으면 아래의 에러를 반환
-    if(newComment.content.replace(/\s| /gi, "").length == 0) {
+    if(content.replace(/\s| /gi, "").length == 0) {
       res.status(400).json({errMsg : "댓글 내용을 입력해주세요"})
       return
     } 
-    // // 비밀번호 정규식이 틀리면 아래의 에러를 반환
-    if(passwordRex.test(newComment.commentPassword !== false)) {
-      res.status(400).send("비밀번호는 최소 8 자, 최소 하나의 문자 및 하나의 숫자로 입력해주세요")
-      return 
-    }
-
-
-    const reuslt = await Comments.create(newComment)
-    // console.log(reuslt)
+    const reuslt = await Comments.create({
+      postId: postId,
+      userId: user._id,
+      nickname: user.nickname,
+      content: content,
+      writeDate: getDate()
+    })
     res.status(201).json({"댓글작성완료": reuslt})
     
   } catch (error) {
@@ -65,49 +65,49 @@ router.get('/posts/:postId/comments', async (req, res) => {
 })
 
 // 댓글 수정하기
-router.put('/posts/comments/:commentId', async (req, res) => {
+router.put('/posts/comments/:commentId',  authMiddleware, async (req, res) => {
   try {
+    // 로그인한 사용자의 ID
+    const user = res.locals.user
     // 파라미터로 댓글의 id와 body로 새 댓글내용 댓글의 패스워드를 가져온다.
     const commentId = req.params.commentId
-    const { newContent, password } = req.body
+    const { newContent } = req.body
     const comment = await Comments.findOne({_id: commentId})
-    
-    console.log("payload = ", comment, newContent, password)
+
     if(newContent.replace(/\s| /gi, "").length == 0) {
       // 댓글의 새내용이 공백이면 아래의 에러메세지를 반환
       res.status(400).json({errMsg : "댓글 내용을 입력해주세요"})
-    } else {
-      // 댓글의 패스워드와 입력한 패스워드를 비교
-      if(comment.password === password) {
-        // 일치하면 댓글의 내용을 수정
-        await Comments.updateOne({_id: commentId}, {$set: {content: newContent}})
-        res.status(200).send("댓글이 수정되었습니다.")
-      } else {
-        // 일치하지 않으면 아래의 에러메세지를 반환 
-        res.status(400).send("비밀번호가 틀립니다.")
-      }
     }
+
+    // 다른사용자의 댓글수정을 방지
+    if(comment.userId != user._id) {
+      // 댓글글작성자가 아니면 아래의 에러메세지 출력
+      res.status(400).json({"errMsg" : "다른 사용자의 댓글은 수정할 수 없습니다."})
+      return
+    }
+    await Comments.updateOne({_id: commentId}, {$set: {content: newContent}})
+    res.status(200).json("댓글이 수정되었습니다.")
   } catch (error) {
     res.status(400).json(error)
   }
 })
 
 // 댓글 삭제
-router.delete('/posts/comments/:commentId', async (req, res) => {
+router.delete('/posts/comments/:commentId', authMiddleware, async (req, res) => {
   try {
+    // 로그인한 사용자의 ID
+    const user = res.locals.user
     const commentId = req.params.commentId
     const comment = await Comments.findOne({_id: commentId})
-    const { password } = req.body
-    console.log(commentId, comment);
-    // 입력한 password와 comment의 password를 비교
-    if(comment.password === password) {
-      // 맞으면 해당 comment를 삭제한다
-      await Comments.deleteOne({_id: commentId})
-      res.status(200).send("댓글이 삭제되었습니다.")
-    } else {
-      // 틀리면 아래의 에러 메세지를 반환 
-      res.status(400).send("비밀번호가 틀립니다.")
+
+    // 다른사용자의 댓글수정을 방지
+    if(comment.userId != user._id) {
+      // 댓글글작성자가 아니면 아래의 에러메세지 출력
+      res.status(400).json({"errMsg" : "다른 사용자의 댓글은 수정할 수 없습니다."})
+      return
     }
+    await Comments.deleteOne({_id: commentId})
+    res.status(200).send("댓글이 삭제되었습니다.")
 
   } catch (error) {
     res.status(400).json(error)
